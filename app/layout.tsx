@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
-import { Inter, Lora } from "next/font/google";
+import { Playfair_Display, Lato } from "next/font/google";
 import "./globals.css";
 
-// Configure the Inter font for body text
-const inter = Inter({ 
+// Configure the Lato font for body text
+const lato = Lato({ 
   subsets: ["latin"],
-  variable: '--font-inter', // CSS variable
+  variable: '--font-lato', // CSS variable
   display: 'swap',
+  weight: ['400', '700'] // Include weights you need
 });
 
-// Configure the Lora font for headings
-const lora = Lora({
+// Configure the Playfair Display font for headings
+const playfairDisplay = Playfair_Display({
   subsets: ['latin'],
-  variable: '--font-lora', // CSS variable
+  variable: '--font-playfair-display', // CSS variable
   display: 'swap',
 });
 
@@ -27,8 +28,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.variable} ${lora.variable} font-sans`}>
+    <html lang="en" suppressHydrationWarning={true}>
+      <body className={`${lato.variable} ${playfairDisplay.variable} font-sans`}>
         {children}
       </body>
     </html>

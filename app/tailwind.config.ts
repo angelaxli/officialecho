@@ -8,10 +8,10 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      fontFamily: {
-        sans: ['var(--font-inter)'], // Assuming you will set up Inter font
-        serif: ['var(--font-lora)'], // Assuming you will set up Lora font
-      },
+        fontFamily: {
+            sans: ['var(--font-lato)'],              // Body text
+            serif: ['var(--font-playfair-display)'], // Headings
+        },
     },
   },
   // Add the plugins section with the new plugin
