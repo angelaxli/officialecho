@@ -1,50 +1,35 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Mic, Upload, CheckCircle, ArrowRight, ArrowLeft, Pencil, Info, Play, ImagePlus, X, Plus } from 'lucide-react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Upload, CheckCircle, ArrowRight, ArrowLeft, Pencil, ImagePlus, X, Plus } from 'lucide-react';
 
-// New Stepper Component
-const Stepper = ({ currentStep, steps }) => (
-    <div className="flex items-center justify-center">
-        {steps.map((step, index) => (
-            <React.Fragment key={index}>
-                <div className="flex flex-col items-center">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-colors ${currentStep >= index + 1 ? 'bg-stone-800 text-white' : 'bg-stone-200 text-stone-500'}`}>
-                        {index + 1}
-                    </div>
-                    <p className={`mt-2 text-sm font-medium ${currentStep >= index + 1 ? 'text-stone-800' : 'text-stone-500'}`}>{step}</p>
-                </div>
-                {index < steps.length - 1 && (
-                    <div className={`flex-auto border-t-2 transition-colors mx-4 ${currentStep > index + 1 ? 'border-stone-800' : 'border-stone-200'}`}></div>
-                )}
-            </React.Fragment>
-        ))}
-    </div>
-);
+// Import the helper components from your /app/components/ directory
+import AudioPlayer from '../components/AudioPlayer';
+import AudioRecorder from '../components/AudioRecorder';
+import Stepper from '../components/Stepper';
 
-
-// Main Page Component
 export default function SubmitPage() {
     const [currentStep, setCurrentStep] = useState(1);
     const [storyTitle, setStoryTitle] = useState('');
     const [speakerName, setSpeakerName] = useState('');
     const [speakerAge, setSpeakerAge] = useState('');
     const [speakerPronouns, setSpeakerPronouns] = useState('');
-    const [speakerPhoto, setSpeakerPhoto] = useState(null);
-    const [audioFile, setAudioFile] = useState(null);
+    const [speakerPhoto, setSpeakerPhoto] = useState<File | null>(null);
+    const [audioFile, setAudioFile] = useState<Blob | null>(null);
     const [audioTab, setAudioTab] = useState('record');
-    const [selectedTags, setSelectedTags] = useState([]);
+    const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [customTag, setCustomTag] = useState('');
     const [location, setLocation] = useState('');
     const [summary, setSummary] = useState('');
     
-    const [photoPreviewUrl, setPhotoPreviewUrl] = useState(null);
-    const [audioPreviewUrl, setAudioPreviewUrl] = useState(null);
+    const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
+    const [audioPreviewUrl, setAudioPreviewUrl] = useState<string | null>(null);
 
     const steps = ["Who's Speaking", "Record", "Add Details", "Review"];
     const [availableTags, setAvailableTags] = useState(["Family", "Migration", "Food", "Tradition", "Love", "Loss", "Childhood", "Work"]);
 
-    // Effect to create and clean up object URLs for previews
     useEffect(() => {
         if (speakerPhoto) {
             const url = URL.createObjectURL(speakerPhoto);
@@ -65,8 +50,7 @@ export default function SubmitPage() {
         }
     }, [audioFile]);
 
-
-    const handleTagClick = (tag) => {
+    const handleTagClick = (tag: string) => {
         setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
     };
     
@@ -82,15 +66,17 @@ export default function SubmitPage() {
     };
 
     const handleNext = () => {
-      if (currentStep < steps.length) {
-        setCurrentStep(currentStep + 1);
-      }
+      if (currentStep < steps.length) setCurrentStep(currentStep + 1);
     };
     
     const handleBack = () => {
-      if (currentStep > 1) {
-        setCurrentStep(currentStep - 1);
-      }
+      if (currentStep > 1) setCurrentStep(currentStep - 1);
+    };
+
+    const handleAudioUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            setAudioFile(e.target.files[0]);
+        }
     };
 
     let isStepValid = false;
@@ -101,7 +87,7 @@ export default function SubmitPage() {
     
     const isSubmittable = audioFile && storyTitle && speakerName && location.trim() !== '' && selectedTags.length > 0;
 
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!isSubmittable) {
             alert("Please ensure all required fields are filled.");
@@ -112,8 +98,8 @@ export default function SubmitPage() {
             speaker_name: speakerName, 
             speaker_age: speakerAge,
             speaker_pronouns: speakerPronouns,
-            speaker_photo_url: speakerPhoto ? `uploads/photos/${speakerPhoto.name}` : null,
-            audio_url: `uploads/audio/${audioFile.name}`, 
+            speaker_photo: speakerPhoto,
+            audio: audioFile,
             tags: selectedTags, 
             location, 
             summary, 
@@ -128,16 +114,16 @@ export default function SubmitPage() {
              <nav className="bg-white border-b border-stone-200">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-20">
-                        <a href="/" className="flex items-center">
+                        <Link href="/" className="flex items-center">
                             <span className="text-2xl font-bold text-stone-900 tracking-tighter">🎤 Echo</span>
-                        </a>
+                        </Link>
                         <div className="hidden md:flex items-center space-x-10">
-                            <a href="/#about" className="text-stone-600 hover:text-stone-900 transition-colors text-base">About</a>
-                            <a href="/submit" className="text-stone-800 font-bold transition-colors text-base">Record a Memory</a>
-                            <a href="/#explore" className="text-stone-600 hover:text-stone-900 transition-colors text-base">Explore</a>
+                            <Link href="/about" className="text-stone-600 hover:text-stone-900 transition-colors text-base">About</Link>
+                            <Link href="/submit" className="text-stone-800 font-bold transition-colors text-base">Record a Memory</Link>
+                            <Link href="/explore" className="text-stone-600 hover:text-stone-900 transition-colors text-base">Explore</Link>
                         </div>
                          <div className="flex items-center">
-                           <a href="#login" className="text-stone-600 hover:text-stone-900 border border-stone-300 hover:border-stone-500 px-4 py-2 rounded-lg transition-colors shadow-sm">Login</a>
+                           <Link href="/login" className="text-stone-600 hover:text-stone-900 border border-stone-300 hover:border-stone-500 px-4 py-2 rounded-lg transition-colors shadow-sm">Login</Link>
                         </div>
                     </div>
                 </div>
@@ -160,7 +146,6 @@ export default function SubmitPage() {
                       </div>
 
                       <form onSubmit={handleSubmit} className="p-6 sm:p-8">
-                        {/* Step 1: Who's Speaking */}
                         {currentStep === 1 && (
                             <div className="space-y-6">
                                 <div>
@@ -183,11 +168,11 @@ export default function SubmitPage() {
                                         <label htmlFor="photo-upload" className="relative block w-full border-2 border-stone-300 border-dashed rounded-lg p-12 text-center hover:border-stone-400 cursor-pointer">
                                             <ImagePlus className="mx-auto h-12 w-12 text-stone-400" />
                                             <span className="mt-2 block text-sm font-medium text-stone-600">Upload a photo</span>
-                                            <input id="photo-upload" type="file" className="sr-only" accept="image/*" onChange={(e) => setSpeakerPhoto(e.target.files[0])} />
+                                            <input id="photo-upload" type="file" className="sr-only" accept="image/*" onChange={(e) => setSpeakerPhoto(e.target.files ? e.target.files[0] : null)} />
                                         </label>
                                     ) : (
                                         <div className="relative w-32 h-32">
-                                            <img src={photoPreviewUrl} alt="Speaker preview" className="w-32 h-32 rounded-lg object-cover" />
+                                            <Image src={photoPreviewUrl || ''} alt="Speaker preview" width={128} height={128} className="w-32 h-32 rounded-lg object-cover" />
                                             <button type="button" onClick={() => setSpeakerPhoto(null)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600">
                                                 <X size={16} />
                                             </button>
@@ -197,59 +182,34 @@ export default function SubmitPage() {
                             </div>
                         )}
 
-                        {/* Step 2: Record */}
                         {currentStep === 2 && (
                           <div>
                             <div className="flex border-b border-stone-200 mb-6">
                                 <button type="button" onClick={() => setAudioTab('record')} className={`px-4 py-2 text-sm font-medium ${audioTab === 'record' ? 'border-b-2 border-stone-800 text-stone-800' : 'text-stone-500'}`}>Record Audio</button>
                                 <button type="button" onClick={() => setAudioTab('upload')} className={`px-4 py-2 text-sm font-medium ${audioTab === 'upload' ? 'border-b-2 border-stone-800 text-stone-800' : 'text-stone-500'}`}>Upload Audio</button>
                             </div>
-                            {/* ... (rest of Step 2 JSX is unchanged) ... */}
                             {audioTab === 'record' && (
-                              <div className="space-y-6">
-                                <div className="bg-stone-50 rounded-lg p-4 text-sm text-stone-600 flex gap-3">
-                                  <Info size={20} className="flex-shrink-0 mt-0.5" />
-                                  <div>
-                                    <h4 className="font-semibold text-stone-800 mb-2">Conversation Starters:</h4>
-                                    <ul className="list-disc list-inside space-y-1">
-                                      <li>Tell me about a childhood memory that still brings you joy.</li>
-                                      <li>What traditions or meals were important in your family?</li>
-                                      <li>What advice would you give to the next generation?</li>
-                                    </ul>
-                                  </div>
-                                </div>
-                                <div className="text-center py-8 border border-dashed border-stone-300 rounded-lg">
-                                  <Mic size={40} className="mx-auto text-stone-400 mb-4"/>
-                                  <p className="text-stone-500">Audio Recorder UI</p>
-                                   <label htmlFor="audio-upload-record" className="mt-4 inline-block p-2 px-4 rounded-lg bg-stone-800 text-white hover:bg-stone-900 cursor-pointer transition-colors text-sm">
-                                        (Simulate Upload)
-                                        <input id="audio-upload-record" type="file" accept="audio/*" className="hidden" onChange={(e) => setAudioFile(e.target.files[0])}/>
-                                    </label>
-                                </div>
-                              </div>
+                                <AudioRecorder onRecordingComplete={setAudioFile} onRecordingReset={() => setAudioFile(null)} />
                             )}
-
                             {audioTab === 'upload' && (
                                <div className="text-center py-12 border border-dashed border-stone-300 rounded-lg">
                                     <Upload size={40} className="mx-auto text-stone-400 mb-4"/>
                                     <p className="text-stone-500 mb-4">Upload an audio file from your computer.</p>
                                     <label htmlFor="audio-upload-main" className="p-3 px-6 rounded-lg bg-stone-800 text-white hover:bg-stone-900 cursor-pointer transition-colors font-semibold">
                                         Choose File
-                                        <input id="audio-upload-main" type="file" accept="audio/*" className="hidden" onChange={(e) => setAudioFile(e.target.files[0])}/>
+                                        <input id="audio-upload-main" type="file" accept="audio/*" className="hidden" onChange={handleAudioUpload}/>
                                     </label>
                                 </div>
                             )}
-
                              {audioFile && (
                                 <div className="mt-6 p-3 bg-green-50 border border-green-200 text-green-800 rounded-lg flex items-center gap-3 text-sm">
                                     <CheckCircle size={20} />
-                                    <span>File ready: <strong>{audioFile.name}</strong></span>
+                                    <span>File ready: <strong>{audioFile instanceof File ? audioFile.name : 'Recorded Audio'}</strong></span>
                                 </div>
                             )}
                           </div>
                         )}
 
-                        {/* Step 3: Add Details */}
                         {currentStep === 3 && (
                             <div className="space-y-6">
                                 <div>
@@ -276,18 +236,17 @@ export default function SubmitPage() {
                                 </div>
                                 <div>
                                     <label htmlFor="summary" className="block text-sm font-medium text-stone-700 mb-1">Describe the story or add notes <span className="text-stone-500">(Optional)</span></label>
-                                    <textarea id="summary" value={summary} onChange={(e) => setSummary(e.target.value)} rows="4" className="w-full p-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"></textarea>
+                                    <textarea id="summary" value={summary} onChange={(e) => setSummary(e.target.value)} rows={4} className="w-full p-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-stone-500 focus:border-stone-500"></textarea>
                                 </div>
                             </div>
                         )}
                         
-                        {/* Step 4: Review */}
                         {currentStep === 4 && (
                           <div className="space-y-4 text-stone-700">
                             {audioPreviewUrl && (
                                 <div className="bg-stone-50 rounded-lg p-4">
                                     <p className="text-sm font-medium text-stone-600 mb-2">Listen to your recording:</p>
-                                    <audio src={audioPreviewUrl} controls className="w-full" />
+                                    <AudioPlayer audioUrl={audioPreviewUrl} />
                                 </div>
                             )}
                             <h4 className="text-lg font-semibold text-stone-800 border-b border-stone-200 pb-2 pt-4">Please review your story details:</h4>
@@ -295,8 +254,8 @@ export default function SubmitPage() {
                              <div className="flex justify-between py-2"><strong className="font-medium text-stone-500">Speaker:</strong> <span className="text-right">{speakerName || 'Not provided'}</span></div>
                              <div className="flex justify-between py-2"><strong className="font-medium text-stone-500">Age:</strong> <span className="text-right">{speakerAge || 'Not provided'}</span></div>
                              <div className="flex justify-between py-2"><strong className="font-medium text-stone-500">Pronouns:</strong> <span className="text-right">{speakerPronouns || 'Not provided'}</span></div>
-                             <div className="flex justify-between py-2 items-center"><strong className="font-medium text-stone-500">Photo:</strong> {photoPreviewUrl ? <img src={photoPreviewUrl} alt="Speaker preview" className="w-16 h-16 rounded-lg object-cover" /> : 'None'}</div>
-                             <div className="flex justify-between py-2"><strong className="font-medium text-stone-500">Audio File:</strong> <span className="text-right truncate">{audioFile?.name || 'No file selected'}</span></div>
+                             <div className="flex justify-between py-2 items-center"><strong className="font-medium text-stone-500">Photo:</strong> {photoPreviewUrl ? <Image src={photoPreviewUrl} alt="Speaker preview" width={64} height={64} className="w-16 h-16 rounded-lg object-cover" /> : 'None'}</div>
+                             <div className="flex justify-between py-2"><strong className="font-medium text-stone-500">Audio File:</strong> <span className="text-right truncate">{audioFile instanceof File ? audioFile.name : (audioFile ? 'Recorded Audio' : 'No file selected')}</span></div>
                              <div className="flex justify-between py-2"><strong className="font-medium text-stone-500">Tags:</strong> <span className="text-right">{selectedTags.join(', ') || 'None'}</span></div>
                              <div className="flex justify-between py-2"><strong className="font-medium text-stone-500">Location:</strong> <span className="text-right">{location || 'None'}</span></div>
                              <div className="py-2"><strong className="font-medium text-stone-500">Summary:</strong> <p className="mt-1 text-stone-600">{summary || 'None'}</p></div>
